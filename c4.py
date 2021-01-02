@@ -73,46 +73,37 @@ def is_win_move(board, piece):
 				return True
 
 
+def get_color(turn):
+	if turn % 2 == 0:
+		return (red, 1)
+	else:
+		return (yellow, 2)
+
+
 window = pygame.display.set_mode(board_size)
 pygame.display.set_caption("Connect Four")
 draw_board(board)
 
 while not game_over:
 	for event in pygame.event.get():
+		(turn_color, turn_num) = get_color(turn)
 		if event.type == pygame.QUIT:
 			pygame.quit()
 			quit()
 		if event.type == pygame.MOUSEMOTION:
 			pygame.draw.rect(window, black, (0, 0, board_width, slot_width))
 			posx = event.pos[0]
-			if turn % 2 == 0:
-				pygame.draw.circle(window, red, (posx, int(slot_width / 2)), radius)
-			else:
-				pygame.draw.circle(window, yellow, (posx, int(slot_width / 2)), radius)
+			pygame.draw.circle(window, turn_color, (posx, int(slot_width / 2)), radius)
 			pygame.display.update()
 		if event.type == pygame.MOUSEBUTTONDOWN:	
 			posx = event.pos[0]
-			if turn % 2 == 0:
-				# player 1 turn
-				col = math.floor(posx / slot_width)
-				if (is_valid_column(board, col)):
-					drop_piece(board, col, 1)
-					if (is_win_move(board, 1)):
-						game_over = True
-						label = font.render("Player 1 Won!", True, red)
-				else: 
-					turn -= 1
-			else:
-				# player 2 turn
-				col = math.floor(posx / slot_width)
-				if (is_valid_column(board, col)):
-					drop_piece(board, col, 2)
-					if (is_win_move(board, 2)):
-						game_over = True
-						label = font.render("Player 2 Won!", True, yellow)
-				else: 
-					turn -= 1
-			turn += 1
+			col = math.floor(posx / slot_width)
+			if (is_valid_column(board, col)):
+				drop_piece(board, col, turn_num)
+				if (is_win_move(board, turn_num)):
+					game_over = True
+					label = font.render("Player " + str(turn_num) + " Won!", True, turn_color)
+				turn += 1
 			draw_board(board)
 	if game_over:
 		window.blit(label, (250, 10))
