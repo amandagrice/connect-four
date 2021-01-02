@@ -16,19 +16,21 @@ board_size = (board_width, board_height)
 red = (255, 0, 0)
 yellow = (255, 255, 0)
 blue = (0, 0, 255)
-white = (0, 0, 0)
+black = (0, 0, 0)
 offset = 100
 radius = int(slot_width / 2 - 5)
 
+pygame.init()
+font = pygame.font.SysFont("Arial", 33, True)
+
 def draw_board(board):
-	print("called draw board")
-	pygame.draw.rect(window, white, (0, 0, board_width, slot_width))
+	pygame.draw.rect(window, black, (0, 0, board_width, slot_width))
 	for c in range(cols):
 		for r in range(rows):
 			rect = (c * slot_width, r * slot_width + offset, slot_width, slot_width)
 			c1 = (int(c * slot_width + slot_width / 2), int(r * slot_width + offset + slot_width / 2))
 			pygame.draw.rect(window, blue, rect)
-			pygame.draw.circle(window, white, c1, radius)
+			pygame.draw.circle(window, black, c1, radius)
 	for c in range(cols):
 		for r in range(rows):
 			c2 = (int(c * slot_width + slot_width / 2), board_height - int(r * slot_width + slot_width / 2))
@@ -48,7 +50,6 @@ def drop_piece(board, col, piece):
 			row = r
 			break
 	board[row][col] = piece
-	draw_board(board)
 
 def is_win_move(board, piece):
 	# horizontal check
@@ -72,7 +73,6 @@ def is_win_move(board, piece):
 				return True
 
 
-pygame.init()
 window = pygame.display.set_mode(board_size)
 pygame.display.set_caption("Connect Four")
 draw_board(board)
@@ -82,8 +82,15 @@ while not game_over:
 		if event.type == pygame.QUIT:
 			pygame.quit()
 			quit()
+		if event.type == pygame.MOUSEMOTION:
+			pygame.draw.rect(window, black, (0, 0, board_width, slot_width))
+			posx = event.pos[0]
+			if turn % 2 == 0:
+				pygame.draw.circle(window, red, (posx, int(slot_width / 2)), radius)
+			else:
+				pygame.draw.circle(window, yellow, (posx, int(slot_width / 2)), radius)
+			pygame.display.update()
 		if event.type == pygame.MOUSEBUTTONDOWN:	
-			print(event.pos)
 			posx = event.pos[0]
 			if turn % 2 == 0:
 				# player 1 turn
@@ -92,7 +99,7 @@ while not game_over:
 					drop_piece(board, col, 1)
 					if (is_win_move(board, 1)):
 						game_over = True
-						print("Player 1 Wins!")
+						label = font.render("Player 1 Won!", True, red)
 				else: 
 					turn -= 1
 			else:
@@ -102,9 +109,14 @@ while not game_over:
 					drop_piece(board, col, 2)
 					if (is_win_move(board, 2)):
 						game_over = True
-						print("Player 2 Wins!")
+						label = font.render("Player 2 Won!", True, yellow)
 				else: 
 					turn -= 1
-			print(np.flip(board, 0))
-			print()
 			turn += 1
+			draw_board(board)
+	if game_over:
+		window.blit(label, (250, 10))
+		pygame.display.update()
+		pygame.time.wait(3000)
+
+
